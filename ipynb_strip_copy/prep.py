@@ -1,7 +1,7 @@
 import json
 import pathlib
 
-from search import Action, search_act
+from ipynb_strip_copy.search import Action, search_act
 
 
 def prep_hw(file, suffix='_rub.ipynb', **kwargs):
