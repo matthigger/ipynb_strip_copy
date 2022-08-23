@@ -57,13 +57,14 @@ def search_cell(json_dict, str_target, case_sensitive=False):
     return cell_list
 
 
-def search_act(json_dict, target_act_list):
+def search_act(json_dict, target_act_list, verbose=False):
     """ returns copy of json_dict. actions taken on all cells with target
 
     Args:
         json_dict (dict): dictionary of ipynb file
         target_act_list (list): list of tuples.  each tuple is a target string
             and an action (see ACTION_RM_CELL, ACTION_ERROR)
+        verbose (bool): toggle command line output
 
     Returns:
         json_dict (dict): dictionary of ipynb file, actions taken on cells
@@ -75,6 +76,9 @@ def search_act(json_dict, target_act_list):
     for str_target, action in target_act_list:
         # search cells for target string
         cell_list = search_cell(json_dict, str_target)
+        if verbose:
+            str_action = str(action).split('.')[1]
+            print(f'{str_action}: {len(cell_list)} instances of "{str_target}"')
 
         if action == Action.RM_COMPLEMENT:
             # swap cell_list for complement
@@ -108,6 +112,7 @@ def search_act(json_dict, target_act_list):
     return json_dict
 
 
+# todo: mv to config
 def quiz_hw_prep(file, stem='_rub.ipynb'):
     new_file_dict = {'_sol.ipynb': [('rubric', Action.RM_CELL),
                                     ('todo', Action.ERROR)],
@@ -121,20 +126,24 @@ def quiz_hw_prep(file, stem='_rub.ipynb'):
     return prep(file, new_file_dict, stem=stem)
 
 
+# todo: mv to config
 def notes_prep(file, stem='.ipynb'):
     new_file_dict = {'_stud.ipynb': [('solution', Action.CLEAR_CELL),
-                                     ('todo', Action.ERROR)]}
-    # todo: ICA version too
+                                     ('todo', Action.ERROR)],
+                     '_ica.ipynb': [('in-class-activity', Action.RM_COMPLEMENT)
+                                    ('solution', Action.CLEAR_CELL),
+                                    ('todo', Action.ERROR)]}
     return prep(file, new_file_dict, stem=stem)
 
 
-def prep(file, new_file_dict, stem):
+def prep(file, new_file_dict, stem, verbose=True):
     json_dict = json_from_ipynb(file)
     for new_file, target_act_list in new_file_dict.items():
-        _json_dict = search_act(json_dict, target_act_list)
+        if verbose:
+            print(f'building: {new_file}')
+        _json_dict = search_act(json_dict, target_act_list, verbose=verbose)
 
         new_file = pathlib.Path(str(file).replace(stem, new_file))
-        print(f'building: {new_file}')
 
         with open(str(new_file), 'w') as f:
             json.dump(_json_dict, f)

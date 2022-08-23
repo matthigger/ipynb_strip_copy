@@ -26,7 +26,7 @@ def test_search_act():
                        ('CLEARME', Action.CLEAR_CELL),
                        ('DELETEME', Action.RM_CELL)]
 
-    json_dict_obs = search_act(json_dict_in, target_act_list)
+    json_dict_obs = search_act(json_dict_in, target_act_list, verbose=True)
 
     # strip id tag of each cell (needn't match to be correct)
     strip_id(json_dict_obs)
