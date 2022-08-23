@@ -3,3 +3,5 @@
 /ipynb_strip_copy.egg-info/
 /dist/
 /test/.ipynb_checkpoints/
+/test/test_cli_hw.ipynb
+/test/test_cli_hw_sol.ipynb

@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
-
 import copy
-import json
-import pathlib
 from enum import Enum
 
 
@@ -21,15 +17,6 @@ empty_code_cell = {'cell_type': 'code',
 empty_markdown_cell = {'cell_type': 'markdown',
                        'metadata': {},
                        'source': []}
-
-
-# todo: CLI this whole thing
-
-def json_from_ipynb(file):
-    file = pathlib.Path(file)
-
-    with open(str(file), 'r') as f:
-        return json.load(f)
 
 
 def search_cell(json_dict, str_target, case_sensitive=False):
@@ -78,7 +65,8 @@ def search_act(json_dict, target_act_list, verbose=False):
         cell_list = search_cell(json_dict, str_target)
         if verbose:
             str_action = str(action).split('.')[1]
-            print(f'{str_action}: {len(cell_list)} instances of "{str_target}"')
+            print(
+                f'{str_action}: {len(cell_list)} instances of "{str_target}"')
 
         if action == Action.RM_COMPLEMENT:
             # swap cell_list for complement
@@ -110,47 +98,3 @@ def search_act(json_dict, target_act_list, verbose=False):
                 raise AttributeError(f'action not recognized: {action}')
 
     return json_dict
-
-
-# todo: mv to config
-def quiz_hw_prep(file, stem='_rub.ipynb'):
-    new_file_dict = {'_sol.ipynb': [('rubric', Action.RM_CELL),
-                                    ('todo', Action.ERROR)],
-                     '.ipynb': [('rubric', Action.RM_CELL),
-                                ('solution', Action.RM_CELL),
-                                ('todo', Action.ERROR)]}
-
-    if stem not in str(file):
-        raise IOError('file must be named f{stem}')
-
-    return prep(file, new_file_dict, stem=stem)
-
-
-# todo: mv to config
-def notes_prep(file, stem='.ipynb'):
-    new_file_dict = {'_stud.ipynb': [('solution', Action.CLEAR_CELL),
-                                     ('todo', Action.ERROR)],
-                     '_ica.ipynb': [('in-class-activity', Action.RM_COMPLEMENT)
-                                    ('solution', Action.CLEAR_CELL),
-                                    ('todo', Action.ERROR)]}
-    return prep(file, new_file_dict, stem=stem)
-
-
-def prep(file, new_file_dict, stem, verbose=True):
-    json_dict = json_from_ipynb(file)
-    for new_file, target_act_list in new_file_dict.items():
-        if verbose:
-            print(f'building: {new_file}')
-        _json_dict = search_act(json_dict, target_act_list, verbose=verbose)
-
-        new_file = pathlib.Path(str(file).replace(stem, new_file))
-
-        with open(str(new_file), 'w') as f:
-            json.dump(_json_dict, f)
-
-
-if __name__ == '__main__':
-    # import sys
-    # file = pathlib.Path(sys.argv[1]).resolve()
-    file = '/home/matt/Dropbox/teach/DS3000/quiz/quiz3/quiz3_rub.ipynb'
-    quiz_hw_prep(file)

@@ -1,4 +1,8 @@
+import shlex
+import subprocess
+
 from ipynb_strip_copy import *
+from prep import json_from_ipynb
 
 file_test = 'test_case_in.ipynb'
 file_expect = 'test_case_out.ipynb'
@@ -33,3 +37,9 @@ def test_search_act():
     strip_id(json_dict_exp)
 
     assert json_dict_exp == json_dict_obs
+
+
+def test_cli():
+    file = 'test_cli_hw_rub.ipynb'
+    cmd = shlex.split(f'python3 -m ipynb_strip_copy {file} -t hw')
+    subprocess.run(cmd, check=True)
