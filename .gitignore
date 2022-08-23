@@ -1,2 +1,5 @@
 *.pyc
 /.idea/
+/ipynb_strip_copy.egg-info/
+/dist/
+/test/.ipynb_checkpoints/

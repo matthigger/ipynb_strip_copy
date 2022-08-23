@@ -3,10 +3,15 @@
 import copy
 import json
 import pathlib
+from enum import Enum
 
-ACTION_ERROR = 0
-ACTION_RM_CELL = 1
-ACTION_CLEAR_CELL = 2
+
+class Action(Enum):
+    ERROR = 0
+    RM_CELL = 1
+    RM_COMPLEMENT = 2
+    CLEAR_CELL = 3
+
 
 empty_code_cell = {'cell_type': 'code',
                    'execution_count': None,
@@ -18,7 +23,6 @@ empty_markdown_cell = {'cell_type': 'markdown',
                        'source': []}
 
 
-# todo: need action class (negate, target, event)
 # todo: CLI this whole thing
 
 def json_from_ipynb(file):
@@ -28,15 +32,29 @@ def json_from_ipynb(file):
         return json.load(f)
 
 
-def search_cell(json_dict, target):
-    # we search back to front so cell_idx is valid after deletion
+def search_cell(json_dict, str_target, case_sensitive=False):
+    """ searches all cells for a string target
+
+    Args:
+        json_dict (dict): dictionary of ipynb file
+        str_target (str): string to search for
+
+    Returns:
+        cell_list (list): list of idx of cells containing str_target
+    """
+    if not case_sensitive:
+        str_target = str_target.lower()
+
+    cell_list = list()
     for cell_idx, cell in enumerate(json_dict['cells']):
-        line_list = list()
-        for line in cell['source']:
-            if target in line.lower():
-                line_list.append(line)
-        if line_list:
-                yield cell_idx, line_list
+        s = ''.join(cell['source'])
+
+        if not case_sensitive:
+            s = s.lower()
+
+        if str_target in s:
+            cell_list.append(cell_idx)
+    return cell_list
 
 
 def search_act(json_dict, target_act_list):
@@ -54,18 +72,27 @@ def search_act(json_dict, target_act_list):
     # leave original intact
     json_dict = copy.copy(json_dict)
 
-    for target, action in target_act_list:
-        for cell_idx, line_list in search_cell(json_dict, target):
-            # actions on later index (so deletions dont change other idx)
-            line_list = reversed(sorted(line_list))
+    for str_target, action in target_act_list:
+        # search cells for target string
+        cell_list = search_cell(json_dict, str_target)
 
-            if action == ACTION_ERROR:
-                s_error = f'{target} found in cell {cell_idx}: {line_list}'
+        if action == Action.RM_COMPLEMENT:
+            # swap cell_list for complement
+            num_cell = len(json_dict['cells'])
+            cell_list = list(set(range(num_cell)) - set(cell_list))
+
+            # swap action
+            action = action.RM_CELL
+
+        # actions on later index (so deletions don't change other idx)
+        for cell_idx in reversed(cell_list):
+            if action == Action.ERROR:
+                s_error = f'{str_target} found in cell {cell_idx}'
                 raise AttributeError(s_error)
-            elif action == ACTION_RM_CELL:
+            elif action == Action.RM_CELL:
                 # delete cell
                 del json_dict['cells'][cell_idx]
-            elif action == ACTION_CLEAR_CELL:
+            elif action == Action.CLEAR_CELL:
                 # replaces cell with an empty cell (of same type)
                 cell_type = json_dict['cells'][cell_idx]['cell_type']
                 if cell_type == 'code':
@@ -82,11 +109,11 @@ def search_act(json_dict, target_act_list):
 
 
 def quiz_hw_prep(file, stem='_rub.ipynb'):
-    new_file_dict = {'_sol.ipynb': [('rubric', ACTION_RM_CELL),
-                                    ('todo', ACTION_ERROR)],
-                     '.ipynb': [('rubric', ACTION_RM_CELL),
-                                ('solution', ACTION_RM_CELL),
-                                ('todo', ACTION_ERROR)]}
+    new_file_dict = {'_sol.ipynb': [('rubric', Action.RM_CELL),
+                                    ('todo', Action.ERROR)],
+                     '.ipynb': [('rubric', Action.RM_CELL),
+                                ('solution', Action.RM_CELL),
+                                ('todo', Action.ERROR)]}
 
     if stem not in str(file):
         raise IOError('file must be named f{stem}')
@@ -95,8 +122,8 @@ def quiz_hw_prep(file, stem='_rub.ipynb'):
 
 
 def notes_prep(file, stem='.ipynb'):
-    new_file_dict = {'_stud.ipynb': [('solution', ACTION_CLEAR_CELL),
-                                     ('todo', ACTION_ERROR)]}
+    new_file_dict = {'_stud.ipynb': [('solution', Action.CLEAR_CELL),
+                                     ('todo', Action.ERROR)]}
     # todo: ICA version too
     return prep(file, new_file_dict, stem=stem)
 
