@@ -1,4 +1,4 @@
-from .prep import prep_hw, prep_notes
+from .file_ipynb import prep_hw, prep_notes
 
 if __name__ == '__main__':
     import argparse
