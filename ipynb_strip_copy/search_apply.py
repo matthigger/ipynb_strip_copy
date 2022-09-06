@@ -1,7 +1,7 @@
 from collections import defaultdict
 from copy import copy
 
-from command import all_command
+from ipynb_strip_copy.command import all_command
 
 ORIG_CMD_STRIP = 'ORIGINAL-CMD-STRIPPED'
 

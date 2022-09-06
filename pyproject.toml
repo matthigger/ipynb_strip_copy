@@ -1,6 +1,6 @@
 [project]
 name = "ipynb_strip_copy"
-version = "0.0.4"
+version = "0.1.0"
 authors = [
     { name = "Matt Higger", email = "matt.higger@gmail.com" },
 ]
