@@ -1,6 +1,6 @@
 if __name__ == '__main__':
-    from ipynb_strip_copy.file_ipynb import json_from_ipynb, json_to_ipynb, \
-        search_apply_json
+    from ipynb_strip_copy import json_from_ipynb, json_to_ipynb, \
+        search_apply_json, count_points_from_json
     import argparse
 
     # parse arguments
@@ -11,11 +11,20 @@ if __name__ == '__main__':
     parser.add_argument('file', type=str, nargs=1, help='input ipynb')
     parser.add_argument('--suffix-sep', dest='sep', type=str, default='_',
                         help='character which separates suffix from stem')
+    parser.add_argument('--sum-pts', dest='sum_pts', action='store_true',
+                        help='sums points in entire assignment')
     args = parser.parse_args()
 
-    # apply commans
+    # apply commands
     json_in = json_from_ipynb(args.file[0])
     suffix_json_dict = search_apply_json(json_in)
+
+    # print pts (if option given)
+    if args.sum_pts:
+        pts_dict = count_points_from_json(json_in)
+        for problem, pts in pts_dict.items():
+            print(f'{pts} {problem}')
+        print(f'{sum(pts_dict.values())} total points')
 
     # build file out template
     file_out = args.file[0].split('.')
