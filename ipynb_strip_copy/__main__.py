@@ -24,7 +24,7 @@ if __name__ == '__main__':
         pts_dict = count_points_from_json(json_in)
         for problem, pts in pts_dict.items():
             print(f'{pts} {problem}')
-        print(f'{sum(pts_dict.values())} total points')
+        print(f'{sum(pts_dict.values())} total points\n')
 
     # build file out template
     file_out = args.file[0].split('.')
@@ -32,6 +32,8 @@ if __name__ == '__main__':
     file_out = '.'.join(file_out)
 
     # output ipynb
+    print('files created:')
     for suffix, json_dict in suffix_json_dict.items():
         _file_out = file_out.replace('.ipynb', args.sep + suffix + '.ipynb')
         json_to_ipynb(json_dict, _file_out)
+        print(_file_out)
