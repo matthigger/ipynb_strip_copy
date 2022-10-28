@@ -2,6 +2,7 @@ if __name__ == '__main__':
     from ipynb_strip_copy import json_from_ipynb, json_to_ipynb, \
         search_apply_json, count_points_from_json
     import argparse
+    import pandas as pd
 
     # parse arguments
     description = \
@@ -22,9 +23,12 @@ if __name__ == '__main__':
     # print pts (if option given)
     if args.sum_pts:
         pts_dict = count_points_from_json(json_in)
-        for problem, pts in pts_dict.items():
-            print(f'{pts} {problem}')
-        print(f'{sum(pts_dict.values())} total points\n')
+
+        # print markdown table with points
+        s = pd.Series(pts_dict, name='points')
+        s.index.name = 'question'
+        s['total'] = sum(s)
+        print(s.reset_index().to_markdown(index=False))
 
     # build file out template
     file_out = args.file[0].split('.')

@@ -60,9 +60,12 @@ contains only:
 
 If the `--sum-pts` flag is passed (i.e. `!python -m ipynb_strip_copy demo_rubric.ipynb --sum-pts`) then we'll search markdown cells for "problems" and print a list of problems, their associated points and the total points for the whole assignment:
 
-    123 problem: example
-    28 part: another example
-    151 total points
+    | question              |   points |
+    |:----------------------|---------:|
+    | problem: example      |      123 |
+    | part: another example |       28 |
+    | total                 |      151 |
+
 
 - points must be integers
 - A problem is defined by the first match of regular expression: `(part|problem).+\(\d+ *(points|pts)[^\(]*\)` on a line where we map characters to their lowercase version beforehand.  See [test_case_points.ipynb](test/test_case_points.ipynb) for some examples.
